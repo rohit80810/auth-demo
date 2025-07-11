@@ -34,4 +34,5 @@ public class UserEntity {
     private Timestamp createAt;
     @UpdateTimestamp
     private Timestamp updatedAt;
+    private String password;
 }
