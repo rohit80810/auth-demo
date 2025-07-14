@@ -9,16 +9,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1.0")
 @RequiredArgsConstructor
 public class ProfileController {
 
     private final ProfileService profileService;
 
-    @PostMapping("register")
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public ProfileResponse register(@Valid @RequestBody ProfileRequest request){
         return profileService.createProfile(request);
 
     }
+
+    @GetMapping("/test")
+    public String test(){
+        return "Hello World";
+
+    }
+
+
 }

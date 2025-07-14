@@ -1,8 +1,13 @@
 package com.rohitdev.authdemo.config;
 
-import org.apache.catalina.filters.CorsFilter;
+import com.rohitdev.authdemo.service.AppUserDetailsService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,16 +24,20 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final AppUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/login","/register","/send-reset-otp","/reset-password","/logout")
+                        auth.requestMatchers("/login","/register","/send-reset-otp","/reset-password","/logout","/test")
                                 .permitAll().anyRequest().authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).logout(AbstractHttpConfigurer::disable);
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .logout(AbstractHttpConfigurer::disable);
                 return http.build();
     }
     @Bean
@@ -38,7 +47,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsFilter corsFilter() {
-        return null;
+        return new CorsFilter(corsConfigurationSource());
     }
 
     private CorsConfigurationSource corsConfigurationSource() {
@@ -50,5 +59,13 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**",config);
         return source;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(){
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(authenticationProvider);
     }
 }
